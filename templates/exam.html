@@ -1,0 +1,1945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Proctoring System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5a6fd6;
+            --secondary: #764ba2;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-soft: linear-gradient(135deg, rgba(102,126,234,0.08) 0%, rgba(118,75,162,0.08) 100%);
+            --bg: #f0f2f8;
+            --surface: #ffffff;
+            --surface-2: #f8f9fc;
+            --surface-3: #f0f2f8;
+            --border: #e4e8f0;
+            --border-hover: #c5cde4;
+            --text-primary: #1a1f36;
+            --text-secondary: #4a5568;
+            --text-muted: #8892a4;
+            --success: #10b981;
+            --success-bg: #ecfdf5;
+            --danger: #ef4444;
+            --danger-bg: #fef2f2;
+            --warning: #f59e0b;
+            --warning-bg: #fffbeb;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --radius-xl: 28px;
+            --radius-full: 999px;
+            --shadow-xs: 0 1px 3px rgba(0,0,0,0.06);
+            --shadow-sm: 0 2px 8px rgba(102,126,234,0.08);
+            --shadow-md: 0 8px 24px rgba(102,126,234,0.12);
+            --shadow-lg: 0 16px 40px rgba(102,126,234,0.16);
+            --shadow-xl: 0 24px 60px rgba(102,126,234,0.2);
+            --font: 'DM Sans', sans-serif;
+            --font-mono: 'DM Mono', monospace;
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 1.25rem;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 60% 50% at 20% 10%, rgba(102,126,234,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 40% 40% at 80% 80%, rgba(118,75,162,0.10) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .exam-container {
+            position: relative;
+            z-index: 1;
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            border: 1px solid var(--border);
+            animation: containerReveal 0.6s var(--transition-slow) both;
+        }
+
+        @keyframes containerReveal {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (min-width: 640px)  { .exam-container { padding: 2.5rem 2rem; } }
+        @media (min-width: 1024px) { .exam-container { padding: 3.5rem 3rem; margin: 1.5rem auto; } }
+
+        .hero-header { text-align: center; margin-bottom: 2.5rem; }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: var(--gradient-soft);
+            border: 1px solid rgba(102,126,234,0.2);
+            color: var(--primary);
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            padding: 0.35rem 0.85rem;
+            border-radius: var(--radius-full);
+            margin-bottom: 1.25rem;
+        }
+
+        h2 {
+            font-size: clamp(1.6rem, 4vw, 2.4rem);
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+            margin-bottom: 0.75rem;
+            line-height: 1.2;
+        }
+
+        .hero-header > p {
+            color: var(--text-secondary);
+            font-size: clamp(0.95rem, 2vw, 1.05rem);
+            max-width: 480px;
+            margin: 0 auto;
+            font-weight: 400;
+        }
+
+        button { font-family: var(--font); cursor: pointer; border: none; font-weight: 600; transition: all var(--transition); line-height: 1; }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background: var(--gradient);
+            color: #fff;
+            padding: 0.875rem 2rem;
+            border-radius: var(--radius-full);
+            font-size: 1rem;
+            font-weight: 600;
+            box-shadow: 0 4px 16px rgba(102,126,234,0.35);
+            margin: 1.75rem auto 0;
+            width: fit-content;
+            min-width: 180px;
+            text-align: center;
+        }
+
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(102,126,234,0.45); }
+        .btn-primary:active { transform: translateY(0); }
+
+        .btn-secondary {
+            background: var(--surface-2);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            padding: 0.625rem 1.25rem;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .btn-secondary:hover { background: var(--surface-3); border-color: var(--border-hover); color: var(--text-primary); }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #fff;
+            padding: 0.75rem 1.75rem;
+            border-radius: var(--radius-full);
+            font-size: 0.95rem;
+            box-shadow: 0 4px 12px rgba(239,68,68,0.3);
+        }
+
+        .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(239,68,68,0.4); }
+
+        .exam-content { display: none; animation: fadeSlideIn 0.5s ease both; }
+
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        #examTimerContainer {
+            display: none;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        #examTimerContainer .timer-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        #timerDisplay {
+            font-family: var(--font-mono);
+            font-size: clamp(1.75rem, 5vw, 2.5rem);
+            font-weight: 500;
+            color: var(--text-primary);
+            letter-spacing: 0.02em;
+        }
+
+        #questionNavPills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-bottom: 1.25rem;
+            padding: 1rem 1.25rem;
+            background: var(--surface-2);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+        }
+
+        .question-pill {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 0.82rem;
+            font-weight: 600;
+            font-family: var(--font);
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            box-shadow: var(--shadow-xs);
+            margin-bottom: 0;
+        }
+
+        .question-pill:hover { border-color: var(--primary); color: var(--primary); transform: scale(1.08); }
+        .question-pill.active { background: var(--gradient); color: #fff; border-color: transparent; box-shadow: 0 3px 10px rgba(102,126,234,0.4); }
+        .question-pill.answered { background: var(--success); color: #fff; border-color: transparent; box-shadow: 0 3px 8px rgba(16,185,129,0.3); }
+
+        .quiz-column { width: 100%; }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: clamp(1.1rem, 3vw, 1.35rem);
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.01em;
+        }
+
+        .section-title .icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            background: var(--gradient-soft);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .question-nav-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        #questionCounter {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            padding: 0.4rem 0.9rem;
+            border-radius: var(--radius-full);
+        }
+
+        .nav-buttons { display: flex; gap: 0.5rem; align-items: center; }
+
+        .nav-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.55rem 1.1rem;
+            border-radius: var(--radius-full);
+            font-size: 0.875rem;
+            font-weight: 600;
+            font-family: var(--font);
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition);
+            margin-bottom: 0;
+            box-shadow: var(--shadow-xs);
+        }
+
+        .nav-button:hover { background: var(--surface-2); border-color: var(--border-hover); color: var(--text-primary); transform: none; }
+
+        .nav-button.next {
+            background: var(--gradient);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 3px 10px rgba(102,126,234,0.3);
+        }
+
+        .nav-button.next:hover { box-shadow: 0 5px 16px rgba(102,126,234,0.45); transform: translateX(2px); }
+
+        #questions-container { padding-bottom: 1rem; }
+
+        .question {
+            animation: fadeSlideIn 0.3s ease both;
+            padding: 1.75rem;
+            background: var(--surface-2);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            margin-bottom: 1.25rem;
+        }
+
+        .question p {
+            font-size: clamp(0.95rem, 2vw, 1.05rem);
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1.25rem;
+            line-height: 1.55;
+            max-width: 100%;
+            text-align: left;
+        }
+
+        .options { display: flex; flex-direction: column; gap: 0.6rem; }
+
+        .option {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            cursor: pointer;
+            transition: all var(--transition);
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .option:hover { border-color: var(--primary); background: rgba(102,126,234,0.04); color: var(--text-primary); }
+        .option input[type="radio"] { width: 18px; height: 18px; accent-color: var(--primary); flex-shrink: 0; cursor: pointer; }
+        .option:has(input:checked) { border-color: var(--primary); background: rgba(102,126,234,0.06); color: var(--text-primary); }
+
+        #submitQuizBtn {
+            background: var(--gradient);
+            color: #fff;
+            padding: 0.875rem 2.25rem;
+            border-radius: var(--radius-full);
+            font-size: 1rem;
+            font-weight: 700;
+            box-shadow: 0 4px 16px rgba(102,126,234,0.4);
+            display: block;
+            margin: 1.5rem auto 0;
+            width: fit-content;
+            min-width: 200px;
+        }
+
+        #submitQuizBtn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(102,126,234,0.5); }
+        #submitQuizBtn:active { transform: translateY(0); }
+
+        #violationWarning {
+            display: none;
+            background: var(--warning-bg);
+            color: #92400e;
+            border: 1px solid #fcd34d;
+            padding: 0.875rem 1.25rem;
+            border-radius: var(--radius-md);
+            margin: 0.75rem 0;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            animation: shakeIn 0.4s ease;
+        }
+
+        @keyframes shakeIn {
+            0%,100% { transform: translateX(0); }
+            20%     { transform: translateX(-6px); }
+            40%     { transform: translateX(6px); }
+            60%     { transform: translateX(-4px); }
+            80%     { transform: translateX(4px); }
+        }
+
+        #mobileWarning {
+            display: none;
+            background: var(--danger-bg);
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+            padding: 0.875rem 1.25rem;
+            border-radius: var(--radius-md);
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            animation: shakeIn 0.4s ease;
+        }
+
+        .loader-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            gap: 1rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .loader {
+            width: 36px;
+            height: 36px;
+            border: 3px solid rgba(102,126,234,0.15);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 0.8s ease-in-out infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .proctoring-overlay {
+            display: none;
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            width: 220px;
+            z-index: 200;
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 12px;
+            border: 1px solid var(--border);
+            animation: fadeSlideIn 0.4s ease both;
+        }
+
+        .proctoring-overlay h3 {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-align: center;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        #webcamLive, #webcamAnnotated {
+            width: 100%;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            display: block;
+            background: var(--surface-3);
+            aspect-ratio: 4/3;
+            object-fit: cover;
+        }
+
+        #webcamAnnotated { display: none; }
+
+        #cameraStatus {
+            font-size: 0.72rem;
+            text-align: center;
+            padding: 4px 8px;
+            margin-top: 6px;
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        #aiResult {
+            font-size: 0.75rem;
+            padding: 6px 8px;
+            margin-top: 6px;
+            text-align: center;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            border: 1px solid transparent;
+        }
+
+        @media (max-width: 480px) {
+            .proctoring-overlay { width: 140px; top: 10px; right: 10px; padding: 8px; }
+            .proctoring-overlay h3 { font-size: 0.7rem; }
+            #aiResult, #cameraStatus { font-size: 0.65rem; }
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 20, 45, 0.55);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 500;
+            padding: 1rem;
+        }
+
+        .modal {
+            background: var(--surface);
+            padding: 2rem 1.75rem;
+            border-radius: var(--radius-xl);
+            width: 100%;
+            max-width: 560px;
+            max-height: 88vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--border);
+            animation: modalReveal 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+
+        @keyframes modalReveal {
+            from { opacity: 0; transform: scale(0.92) translateY(16px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal h3 { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); text-align: center; margin-bottom: 1.5rem; letter-spacing: -0.01em; }
+        .modal-content { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7; margin-bottom: 1.5rem; }
+        .modal-content p { margin-bottom: 0.75rem; text-align: left; max-width: 100%; }
+        .modal-content ol { margin-left: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; margin-bottom: 0.75rem; }
+        .modal-content li { font-size: 0.9rem; line-height: 1.6; }
+        .modal-actions { display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap; }
+        .modal-actions button { margin-bottom: 0; }
+
+        .quiz-result { font-weight: 700; font-size: 1.1rem; margin-top: 1rem; text-align: center; }
+
+        #quizAnalysisContainer {
+            display: none;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 2rem 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        @media (min-width: 640px) { #quizAnalysisContainer { padding: 2.5rem 2rem; } }
+
+        .score-display { text-align: center; padding-bottom: 1.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+
+        .score-circle {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--gradient);
+            color: #fff;
+            margin-bottom: 1rem;
+            box-shadow: 0 8px 24px rgba(102,126,234,0.35);
+        }
+
+        .score-circle .score-num { font-size: 2rem; font-weight: 700; line-height: 1; }
+        .score-circle .score-label { font-size: 0.7rem; font-weight: 600; opacity: 0.85; letter-spacing: 0.04em; }
+
+        .result-status { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: var(--radius-full); font-size: 0.9rem; font-weight: 600; }
+        .result-status.pass { background: var(--success-bg); color: #065f46; }
+        .result-status.fail { background: var(--danger-bg); color: #991b1b; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+
+        .stats-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; }
+        .stats-card .stats-header { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .stats-card .stats-value { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); font-family: var(--font-mono); line-height: 1.1; }
+        .stats-card .stats-sub { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.3rem; }
+
+        .perf-section { margin-bottom: 1.5rem; }
+        .perf-section h3 { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem; display: flex; align-items: center; justify-content: flex-start; }
+        .perf-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.6rem; }
+        .perf-label { width: 100px; font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); flex-shrink: 0; }
+        .perf-bar-track { flex: 1; height: 8px; background: var(--border); border-radius: var(--radius-full); overflow: hidden; }
+        .perf-bar-fill { height: 100%; border-radius: var(--radius-full); transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        .perf-count { width: 28px; font-size: 0.85rem; font-weight: 600; color: var(--text-primary); text-align: right; flex-shrink: 0; }
+
+        .answer-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 0.75rem; }
+        .answer-card .q-text { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.75rem; }
+        .correct-answer { background: var(--success-bg); border-radius: var(--radius-md); padding: 0.75rem 1rem; border-left: 3px solid var(--success); font-size: 0.875rem; color: #065f46; }
+        .incorrect-answer { background: var(--danger-bg); border-radius: var(--radius-md); padding: 0.75rem 1rem; border-left: 3px solid var(--danger); font-size: 0.875rem; color: #991b1b; }
+        .answer-feedback { margin-top: 0.35rem; font-weight: 700; font-size: 0.82rem; }
+
+        .print-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: var(--surface-2);
+            color: var(--text-secondary);
+            border: 1.5px solid var(--border);
+            padding: 0.7rem 1.4rem;
+            border-radius: var(--radius-full);
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: var(--font);
+            cursor: pointer;
+            transition: all var(--transition);
+            margin: 1.25rem auto 0;
+            width: fit-content;
+        }
+
+        .print-btn:hover { background: var(--gradient); color: #fff; border-color: transparent; box-shadow: 0 4px 14px rgba(102,126,234,0.35); }
+
+        /* ── Chatbot ── */
+        #chat-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            background: var(--surface);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--border);
+            z-index: 300;
+            overflow: hidden;
+            animation: fadeSlideIn 0.5s 0.3s ease both;
+        }
+
+        @media (max-width: 480px) { #chat-container { width: calc(100vw - 40px); bottom: 12px; right: 12px; } }
+
+        #chat-header {
+            background: var(--gradient);
+            color: #fff;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        #chat-header img { height: 28px; width: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.4); object-fit: cover; flex-shrink: 0; }
+        #chat-header h4 { font-size: 0.9rem; font-weight: 700; margin: 0; letter-spacing: 0.01em; }
+        #chat-header .online-dot { width: 8px; height: 8px; background: #4ade80; border-radius: 50%; margin-left: auto; box-shadow: 0 0 0 2px rgba(74,222,128,0.25); flex-shrink: 0; }
+        #chat-header .chevron { margin-left: 4px; font-size: 0.75rem; transition: transform 0.2s; }
+        #chat-header.collapsed .chevron { transform: rotate(180deg); }
+
+        #chat-body { transition: max-height 0.3s ease, opacity 0.3s ease; max-height: 500px; opacity: 1; overflow: hidden; }
+        #chat-body.collapsed { max-height: 0; opacity: 0; }
+
+        /* ── Test gen panel ── */
+        #test-gen-panel {
+            display: none;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface-2);
+        }
+
+        #test-gen-panel .tg-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        #tg-topic {
+            width: 100%;
+            padding: 7px 10px;
+            border-radius: var(--radius-sm);
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            color: var(--text-primary);
+            font-family: var(--font);
+            font-size: 0.82rem;
+            outline: none;
+            margin-bottom: 7px;
+            transition: border-color var(--transition);
+        }
+
+        #tg-topic:focus { border-color: var(--primary); }
+
+        .tg-row { display: flex; gap: 6px; margin-bottom: 8px; }
+
+        #tg-num {
+            width: 64px;
+            padding: 7px 8px;
+            border-radius: var(--radius-sm);
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            color: var(--text-primary);
+            font-family: var(--font);
+            font-size: 0.82rem;
+            outline: none;
+            transition: border-color var(--transition);
+        }
+
+        #tg-num:focus { border-color: var(--primary); }
+
+        #tg-difficulty {
+            flex: 1;
+            padding: 7px 8px;
+            border-radius: var(--radius-sm);
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            color: var(--text-primary);
+            font-family: var(--font);
+            font-size: 0.82rem;
+            outline: none;
+            transition: border-color var(--transition);
+        }
+
+        #tg-difficulty:focus { border-color: var(--primary); }
+
+        #tg-generate {
+            width: 100%;
+            padding: 8px;
+            border-radius: var(--radius-full);
+            background: var(--gradient);
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: var(--font);
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(102,126,234,0.3);
+            transition: all var(--transition);
+            margin-bottom: 0;
+        }
+
+        #tg-generate:hover { box-shadow: 0 4px 14px rgba(102,126,234,0.45); transform: translateY(-1px); }
+        #tg-generate:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .tg-toggle-wrap {
+            text-align: center;
+            padding: 6px;
+            border-top: 1px solid var(--border);
+            background: var(--surface-2);
+        }
+
+        #tg-toggle-btn {
+            font-size: 0.75rem;
+            color: var(--primary);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: var(--font);
+            font-weight: 600;
+            padding: 0;
+            transition: opacity var(--transition);
+        }
+
+        #tg-toggle-btn:hover { opacity: 0.7; }
+
+        #chat-window {
+            height: 240px;
+            overflow-y: auto;
+            padding: 12px;
+            background: var(--surface);
+            scroll-behavior: smooth;
+        }
+
+        #chat-window::-webkit-scrollbar { width: 4px; }
+        #chat-window::-webkit-scrollbar-track { background: transparent; }
+        #chat-window::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        #chat-input-area {
+            display: flex;
+            padding: 10px 12px;
+            gap: 8px;
+            background: var(--surface-2);
+            border-top: 1px solid var(--border);
+        }
+
+        #user-input {
+            flex: 1;
+            border: 1.5px solid var(--border);
+            padding: 8px 14px;
+            border-radius: var(--radius-full);
+            outline: none;
+            font-family: var(--font);
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            background: var(--surface);
+            transition: border-color var(--transition);
+            min-width: 0;
+        }
+
+        #user-input:focus { border-color: var(--primary); }
+        #user-input::placeholder { color: var(--text-muted); }
+
+        #mic-button {
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 1.05rem;
+            padding: 0 4px;
+            flex-shrink: 0;
+            transition: transform 0.15s;
+        }
+
+        #mic-button:hover { transform: scale(1.15); }
+
+        #mic-button.listening {
+            background: var(--danger) !important;
+            color: #fff !important;
+            border-radius: 50%;
+            padding: 4px 6px;
+            animation: mic-pulse 1s infinite;
+        }
+
+        @keyframes mic-pulse {
+            0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
+            50%      { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+        }
+
+        #send-button {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            font-family: var(--font);
+            margin-bottom: 0;
+            box-shadow: 0 2px 8px rgba(102,126,234,0.3);
+            flex-shrink: 0;
+            transition: all var(--transition);
+        }
+
+        #send-button:hover { box-shadow: 0 4px 14px rgba(102,126,234,0.45); }
+        #send-button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .message {
+            margin-bottom: 8px;
+            padding: 8px 12px;
+            border-radius: 14px;
+            max-width: 85%;
+            word-wrap: break-word;
+            font-size: 0.85rem;
+            line-height: 1.45;
+        }
+
+        .message.user { background: rgba(102,126,234,0.1); color: var(--text-primary); margin-left: auto; border-bottom-right-radius: 4px; }
+        .message.bot  { background: var(--surface-3); color: var(--text-secondary); margin-right: auto; border-bottom-left-radius: 4px; }
+
+        /* ── Typing indicator ── */
+        .typing-indicator span {
+            display: inline-block;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            opacity: 0.4;
+            margin: 0 2px;
+            animation: bounce 1s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) { animation-delay: 0.15s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.30s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: translateY(0); }
+            40%           { transform: translateY(-6px); }
+        }
+
+        /* ── In-chat quiz cards ── */
+        .chat-quiz-card {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+            margin-top: 6px;
+            font-size: 0.85rem;
+        }
+
+        .chat-quiz-card .cq-q { font-weight: 600; margin-bottom: 8px; color: var(--text-primary); }
+
+        .chat-quiz-card .cq-opt {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 6px 10px;
+            margin: 3px 0;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            color: var(--text-secondary);
+            font-family: var(--font);
+            font-size: 0.82rem;
+            transition: all var(--transition);
+        }
+
+        .chat-quiz-card .cq-opt:hover { border-color: var(--primary); color: var(--text-primary); }
+        .chat-quiz-card .cq-opt.selected { background: rgba(102,126,234,0.08); border-color: var(--primary); color: var(--text-primary); }
+
+        @keyframes timerFlash {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.4; }
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
+
+        .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    </style>
+</head>
+<body>
+
+<canvas id="captureCanvas" width="640" height="480" class="visually-hidden"></canvas>
+
+<div class="exam-container">
+    <div class="hero-header">
+        <div class="hero-badge">🔒 Secure Proctored Exam</div>
+        <h2>Welcome, Student 👋</h2>
+        <p>Get ready to start your exam. Please ensure your camera is enabled before proceeding.</p>
+    </div>
+
+    <div id="mobileWarning">⚠️ Mobile phone detected! Please refrain from using mobile devices during the exam.</div>
+    
+
+<!-- ADD THIS BLOCK -->
+<div id="welcomeQuizGen" style="margin-top:2rem;padding:1.5rem;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-lg);">
+    <div style="font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-bottom:1rem;">⚡ Generate Custom Quiz Before Exam</div>
+    <input id="wq-topic" type="text" placeholder="Topic (e.g. Python, History...)" autocomplete="off"
+        style="width:100%;padding:10px 14px;border-radius:var(--radius-md);border:1.5px solid var(--border);font-family:var(--font);font-size:0.9rem;margin-bottom:0.75rem;outline:none;background:var(--surface);color:var(--text-primary);">
+    <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem;">
+        <input id="wq-num" type="number" value="5" min="1" max="20" placeholder="# Questions"
+            style="width:80px;padding:10px;border-radius:var(--radius-md);border:1.5px solid var(--border);font-family:var(--font);font-size:0.9rem;outline:none;background:var(--surface);color:var(--text-primary);">
+        <select id="wq-difficulty"
+            style="flex:1;padding:10px;border-radius:var(--radius-md);border:1.5px solid var(--border);font-family:var(--font);font-size:0.9rem;outline:none;background:var(--surface);color:var(--text-primary);">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+        </select>
+    </div>
+    <button id="wq-generate" class="btn-primary" style="margin:0;width:100%;">⚡ Generate Quiz</button>
+    <div id="wq-status" style="margin-top:0.75rem;font-size:0.85rem;color:var(--text-muted);text-align:center;"></div>
+</div>
+
+    <button id="startExamBtn" class="btn-primary">Start Exam →</button>
+
+    <div id="examContent" class="exam-content">
+        <div class="quiz-column">
+            <div class="section-title">
+                <span class="icon">📝</span>
+                Exam Questions
+            </div>
+            <div id="quizQuestions" class="quiz-questions">
+                <div class="loader-wrap">
+                    <div class="loader"></div>
+                    <span>Loading questions…</span>
+                </div>
+            </div>
+            <button id="submitQuizBtn" style="display:none;">Submit Exam ✓</button>
+            <div id="quizResult" class="quiz-result" style="display:none;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Proctoring overlay -->
+<div id="proctorOverlay" class="proctoring-overlay" role="region" aria-label="Proctoring Camera">
+    <h3>Proctoring 🎥</h3>
+    <video id="webcamLive" autoplay muted playsinline aria-label="Live webcam feed"></video>
+    <img id="webcamAnnotated" alt="Annotated webcam feed" />
+    <div id="cameraStatus">Waiting for camera…</div>
+    <p id="aiResult"></p>
+</div>
+
+<!-- Terms Modal -->
+<div id="termsModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="termsTitle">
+    <div class="modal">
+        <h3 id="termsTitle">📋 Exam Terms & Conditions</h3>
+        <div class="modal-content">
+            <p>Please read and accept the following before proceeding:</p>
+            <ol>
+                <li>This is a proctored exam. Your webcam must remain on throughout.</li>
+                <li>No external resources, books, notes, or additional devices are permitted.</li>
+                <li>Switching tabs or minimizing the browser window is not allowed and will be flagged.</li>
+                <li>You must remain visible in the webcam view at all times.</li>
+                <li>No communication with others is allowed during the exam.</li>
+                <li>Failure to comply may result in disqualification.</li>
+                <li>Your session will be monitored for security purposes.</li>
+                <li>Time limits must be strictly observed. The exam will auto-submit when time expires.</li>
+            </ol>
+            <p>By clicking <strong>I Agree</strong> you acknowledge that you have read, understood, and agree to these terms.</p>
+        </div>
+        <div class="modal-actions">
+            <button id="declineTermsBtn" class="btn-danger">Decline</button>
+            <button id="acceptTermsBtn" class="btn-primary" style="margin:0;">I Agree</button>
+        </div>
+    </div>
+</div>
+
+<!-- Exam Ended Modal -->
+<div id="examEndedModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="examEndedTitle">
+    <div class="modal">
+        <h3 id="examEndedTitle">⛔ Exam Ended</h3>
+        <div class="modal-content">
+            <p id="examEndedMessage">⚠️ Your exam has been auto-submitted after reaching the maximum violation limit.</p>
+        </div>
+        <div class="modal-actions">
+            <button id="endTestBtn" class="btn-danger">End Test</button>
+        </div>
+    </div>
+</div>
+
+<!-- Chatbot -->
+<div id="chat-container" role="complementary" aria-label="Nirixa AI Assistant">
+    <!-- Header (click to collapse/expand) -->
+    <div id="chat-header">
+        <img src="{{ url_for('static', filename='images/erica-logo.png.jpg') }}" alt="Erica assistant avatar">
+        <h4>Nirixa AI</h4>
+        <span class="online-dot" title="Online"></span>
+        <span class="chevron">▲</span>
+    </div>
+
+    <!-- Collapsible body -->
+    <div id="chat-body">
+        <!-- Test generator panel (hidden by default) -->
+        <div id="test-gen-panel">
+            <div class="tg-label">⚡ Generate Custom Quiz</div>
+            <input id="tg-topic" type="text" placeholder="Topic (e.g. World War II)" autocomplete="off">
+            <div class="tg-row">
+                <input id="tg-num" type="number" value="5" min="1" max="20" placeholder="# Qs">
+                <select id="tg-difficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </div>
+            <button id="tg-generate">Generate Test</button>
+        </div>
+
+        <div id="chat-window" role="log" aria-live="polite"></div>
+
+        <div id="chat-input-area">
+            <button id="mic-button" title="Voice input" aria-label="Voice input">🎤</button>
+            <input type="text" id="user-input" placeholder="Ask Nirixa AI…" aria-label="Chat input" autocomplete="off" />
+            <button id="send-button" aria-label="Send message">Send</button>
+        </div>
+
+        <div class="tg-toggle-wrap">
+            <button id="tg-toggle-btn">⚡ Generate custom quiz</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ── API endpoints ────────────────────────────────────────────
+const CHAT_ENDPOINT     = '/chat';
+const SUBMIT_ENDPOINT   = '/submit_quiz';
+const GENERATE_ENDPOINT = '/generate_test';   // ← matches Flask route
+
+
+// Welcome page quiz generator
+document.getElementById('wq-generate').addEventListener('click', async () => {
+    const topic      = document.getElementById('wq-topic').value.trim();
+    const num        = parseInt(document.getElementById('wq-num').value || '5');
+    const difficulty = document.getElementById('wq-difficulty').value;
+    const btn        = document.getElementById('wq-generate');
+    const status     = document.getElementById('wq-status');
+
+    if (!topic) { status.textContent = '⚠️ Please enter a topic.'; status.style.color = 'var(--warning)'; return; }
+
+    btn.disabled       = true;
+    btn.textContent    = 'Generating…';
+    status.style.color = 'var(--text-muted)';
+    status.textContent = 'Generating your quiz, please wait…';
+
+    try {
+        const res = await fetch('/generate_test', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topic, num_questions: num, difficulty })
+        });
+        const questions = await res.json();
+        if (questions.error) throw new Error(questions.error);
+
+        window.customQuizQuestions = questions;
+
+        // Calculate and show time
+        const minsPerQ  = { easy: 3, medium: 4, hard: 6 };
+        const totalMins = questions.length * (minsPerQ[difficulty] || 4);
+
+        status.innerHTML = `
+            ✅ <strong>${questions.length} questions</strong> on "<em>${topic}</em>" ready!<br>
+            <span style="font-size:0.8rem;">⏱ Exam duration: <strong>${totalMins} minutes</strong> (${difficulty})</span><br>
+            <span style="font-size:0.8rem;color:var(--text-muted);">Click <strong>Start Exam</strong> when ready.</span>`;
+        status.style.color = 'var(--success)';
+
+    } catch (err) {
+        status.textContent = `❌ ${err.message}`;
+        status.style.color = 'var(--danger)';
+    } finally {
+        btn.disabled    = false;
+        btn.textContent = '⚡ Generate Quiz';
+    }
+});
+
+// ── DOM refs ─────────────────────────────────────────────────
+const startExamBtn           = document.getElementById('startExamBtn');
+const examContent            = document.getElementById('examContent');
+const proctorOverlay         = document.getElementById('proctorOverlay');
+const quizQuestionsContainer = document.getElementById('quizQuestions');
+const submitQuizBtn          = document.getElementById('submitQuizBtn');
+const quizResult             = document.getElementById('quizResult');
+const termsModal             = document.getElementById('termsModal');
+const acceptTermsBtn         = document.getElementById('acceptTermsBtn');
+const declineTermsBtn        = document.getElementById('declineTermsBtn');
+const examEndedModal         = document.getElementById('examEndedModal');
+const endTestBtn             = document.getElementById('endTestBtn');
+const webcamLive             = document.getElementById('webcamLive');
+const webcamAnnotated        = document.getElementById('webcamAnnotated');
+const captureCanvas          = document.getElementById('captureCanvas');
+const captureCtx             = captureCanvas.getContext('2d');
+const cameraStatus           = document.getElementById('cameraStatus');
+const aiResult               = document.getElementById('aiResult');
+const mobileWarning          = document.getElementById('mobileWarning');
+const examContainer          = document.querySelector('.exam-container');
+
+// ── Timer DOM ────────────────────────────────────────────────
+const examTimerContainer = document.createElement('div');
+examTimerContainer.id = 'examTimerContainer';
+const timerLabel = document.createElement('div');
+timerLabel.className = 'timer-label';
+timerLabel.textContent = 'Time Remaining';
+const timerDisplay = document.createElement('div');
+timerDisplay.id = 'timerDisplay';
+examTimerContainer.appendChild(timerLabel);
+examTimerContainer.appendChild(timerDisplay);
+examContent.insertBefore(examTimerContainer, examContent.firstChild);
+
+// ── Analysis container ───────────────────────────────────────
+const quizAnalysisContainer = document.createElement('div');
+quizAnalysisContainer.id = 'quizAnalysisContainer';
+examContainer.appendChild(quizAnalysisContainer);
+
+// ── State ────────────────────────────────────────────────────
+let examDuration         = 30 * 60;
+let timerInterval;
+let timeRemaining;
+let faceNotVisibleCount  = 0;
+let focusLostCount       = 0;
+let mobileDetectedCount  = 0;
+let totalViolations      = 0;
+const MAX_VIOLATIONS     = 3;
+let quizQuestions        = [];
+let currentQuestionIndex = 0;
+let cameraStream         = null;
+let detectionInterval    = null;
+
+// ── Helpers ──────────────────────────────────────────────────
+function showWarning(message) {
+    let el = document.getElementById('violationWarning');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'violationWarning';
+        quizQuestionsContainer.parentNode.insertBefore(el, quizQuestionsContainer);
+    }
+    el.innerHTML = message;
+    el.style.display = 'block';
+    el.style.animation = 'none';
+    el.offsetHeight;
+    el.style.animation = 'shakeIn 0.4s ease';
+    setTimeout(() => { el.style.display = 'none'; }, 5000);
+}
+
+function showTermsModal()     { termsModal.style.display     = 'flex'; }
+function hideTermsModal()     { termsModal.style.display     = 'none'; }
+function showExamEndedModal() { examEndedModal.style.display = 'flex'; }
+function hideExamEndedModal() { examEndedModal.style.display = 'none'; }
+
+function decodeHtmlEntities(text) {
+    const ta = document.createElement('textarea');
+    ta.innerHTML = text;
+    return ta.value;
+}
+
+// ── Camera ───────────────────────────────────────────────────
+async function startCamera() {
+    try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+            video: { width: 640, height: 480, facingMode: 'user' }, audio: false
+        });
+        webcamLive.srcObject = cameraStream;
+        cameraStatus.textContent = 'Camera active ✅';
+        cameraStatus.style.color = 'var(--success)';
+        startDetectionLoop();
+    } catch (err) {
+        cameraStatus.textContent = `Camera error: ${err.message}`;
+        cameraStatus.style.color = 'var(--danger)';
+        aiResult.textContent = '⚠️ Camera unavailable';
+    }
+}
+
+function startDetectionLoop() {
+    detectionInterval = setInterval(async () => {
+        if (!cameraStream) return;
+        captureCtx.drawImage(webcamLive, 0, 0, 640, 480);
+        const frameData = captureCanvas.toDataURL('image/jpeg', 0.7);
+        try {
+            const response = await fetch('/analyze_frame', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ frame: frameData })
+            });
+            const data = await response.json();
+            if (data.error) return;
+
+            webcamAnnotated.src = data.annotated_frame;
+            webcamAnnotated.style.display = 'block';
+            webcamLive.style.display = 'none';
+
+            if (data.cheating_detected) {
+                aiResult.textContent      = `⚠️ ${data.reason}`;
+                aiResult.style.color      = 'var(--danger)';
+                aiResult.style.background = 'var(--danger-bg)';
+                aiResult.style.border     = '1px solid #fca5a5';
+
+                if (examContent.style.display === 'block') {
+                    const reason = data.reason.toLowerCase();
+                    if (reason.includes('no face') || reason.includes('face not')) {
+                        faceNotVisibleCount++;
+                        totalViolations = faceNotVisibleCount + focusLostCount + mobileDetectedCount;
+                        showWarning(`⚠️ Face not detected! Violation ${totalViolations}/${MAX_VIOLATIONS}`);
+                        checkViolationsAndSubmit();
+                    }
+                    if (reason.includes('mobile') || reason.includes('phone')) {
+                        mobileWarning.style.display = 'block';
+                        mobileDetectedCount++;
+                        totalViolations = faceNotVisibleCount + focusLostCount + mobileDetectedCount;
+                        showWarning(`⚠️ Mobile phone detected! Violation ${totalViolations}/${MAX_VIOLATIONS}`);
+                        checkViolationsAndSubmit();
+                    } else {
+                        mobileWarning.style.display = 'none';
+                    }
+                    fetch('/log_cheating', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ reason: data.reason })
+                    });
+                }
+            } else {
+                aiResult.textContent      = '✅ No cheating detected';
+                aiResult.style.color      = 'var(--success)';
+                aiResult.style.background = 'var(--success-bg)';
+                aiResult.style.border     = '1px solid #6ee7b7';
+                mobileWarning.style.display = 'none';
+            }
+        } catch (err) {
+            console.error('Detection request failed:', err);
+        }
+    }, 2000);
+}
+
+function stopCamera() {
+    if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+    clearInterval(detectionInterval);
+}
+
+// ── Exam lifecycle ────────────────────────────────────────────
+// ── Validate quiz exists before showing terms ─────────────────
+
+function calculateExamDuration(numQuestions, difficulty) {
+    // Minutes per question based on difficulty
+    const minsPerQuestion = {
+        easy:   3,
+        medium: 4,
+        hard:   6
+    };
+    const mins = numQuestions * (minsPerQuestion[difficulty] || 4);
+    return mins * 60; // return in seconds
+}
+startExamBtn.addEventListener('click', () => {
+    if (!window.customQuizQuestions || window.customQuizQuestions.length === 0) {
+        const status = document.getElementById('wq-status');
+        status.textContent = '⚠️ Please generate a quiz first before starting the exam.';
+        status.style.color = 'var(--danger)';
+        document.getElementById('wq-topic').focus();
+        return;
+    }
+    showTermsModal();
+});
+
+function startExam() {
+    examContent.style.display        = 'block';
+    proctorOverlay.style.display     = 'block';
+    startExamBtn.style.display       = 'none';
+    document.getElementById('welcomeQuizGen').style.display = 'none';
+    document.getElementById('chat-container').style.display = 'none';
+    examTimerContainer.style.display = 'block';
+
+    // Calculate timer based on questions and difficulty
+    const numQuestions = window.customQuizQuestions.length;
+    const difficulty   = document.getElementById('wq-difficulty').value;
+    examDuration = calculateExamDuration(numQuestions, difficulty);
+
+    startTimer();
+    loadQuizQuestions();
+    startCamera();
+}
+function startTimer() {
+    timeRemaining = examDuration;
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+        timeRemaining--;
+        updateTimerDisplay();
+        if (timeRemaining <= 0) { clearInterval(timerInterval); endExam("Time's up!"); }
+        if (timeRemaining <= 300) {
+            timerDisplay.style.color = 'var(--danger)';
+            if (timeRemaining <= 60) timerDisplay.style.animation = 'timerFlash 1s infinite';
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const m = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
+    const s = (timeRemaining % 60).toString().padStart(2, '0');
+    timerDisplay.textContent = `${m}:${s}`;
+}
+
+function endExam(reason) {
+    clearInterval(timerInterval);
+    stopCamera();
+    const timeElapsed = examDuration - timeRemaining;
+    fetch('/log_cheating', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: reason || 'Exam ended', timeElapsed,
+            faceViolations: faceNotVisibleCount, tabViolations: focusLostCount, mobileViolations: mobileDetectedCount })
+    });
+    submitQuiz();
+    const msg = document.getElementById('examEndedMessage');
+    if (msg) msg.textContent = reason || 'Exam ended';
+    showExamEndedModal();
+    examContent.style.display    = 'none';
+    proctorOverlay.style.display = 'none';
+}
+
+function checkViolationsAndSubmit() {
+    if (totalViolations >= MAX_VIOLATIONS) endExam(`Auto-submitted after ${MAX_VIOLATIONS} violations`);
+}
+
+// ── Quiz loading ──────────────────────────────────────────────
+function loadQuizQuestions() {
+    if (!window.customQuizQuestions || window.customQuizQuestions.length === 0) {
+        quizQuestionsContainer.innerHTML = `
+            <div style="text-align:center;padding:2rem;color:var(--danger);">
+                <p>No quiz loaded. Please go back and generate a quiz first.</p>
+            </div>`;
+        return;
+    }
+    quizQuestions = window.customQuizQuestions;
+    displayQuizQuestions(quizQuestions);
+    createQuestionNavPills(quizQuestions.length);
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', updateNavPillsState);
+    });
+    window.customQuizQuestions = null;
+}
+// Also used by chatbot to load AI-generated questions
+function loadQuestions(questions) {
+    quizQuestions = questions;
+    currentQuestionIndex = 0;
+    const old = document.getElementById('questionNavPills');
+    if (old) old.remove();
+    displayQuizQuestions(questions);
+    createQuestionNavPills(questions.length);
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', updateNavPillsState);
+    });
+}
+
+function displayQuizQuestions(questions) {
+    quizQuestionsContainer.innerHTML = '';
+    if (!questions || questions.length === 0) {
+        quizQuestionsContainer.innerHTML = '<p style="text-align:center;color:var(--text-muted);">No questions available.</p>';
+        return;
+    }
+
+    const navContainer = document.createElement('div');
+    navContainer.className = 'question-nav-bar';
+
+    const questionCounter = document.createElement('div');
+    questionCounter.id = 'questionCounter';
+    navContainer.appendChild(questionCounter);
+
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.className = 'nav-buttons';
+
+    const prevButton = document.createElement('button');
+    prevButton.id = 'prevQuestionBtn';
+    prevButton.innerHTML = '← Prev';
+    prevButton.className = 'nav-button prev';
+    prevButton.style.display = 'none';
+    prevButton.addEventListener('click', showPreviousQuestion);
+    buttonsContainer.appendChild(prevButton);
+
+    const nextButton = document.createElement('button');
+    nextButton.id = 'nextQuestionBtn';
+    nextButton.innerHTML = 'Next →';
+    nextButton.className = 'nav-button next';
+    nextButton.addEventListener('click', showNextQuestion);
+    buttonsContainer.appendChild(nextButton);
+
+    navContainer.appendChild(buttonsContainer);
+
+    const questionsDiv = document.createElement('div');
+    questionsDiv.id = 'questions-container';
+
+    quizQuestionsContainer.appendChild(navContainer);
+    quizQuestionsContainer.appendChild(questionsDiv);
+
+    questions.forEach((question, index) => {
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'question';
+        questionDiv.dataset.questionIndex = index;
+        questionDiv.style.display = index === 0 ? 'block' : 'none';
+
+        const questionText = document.createElement('p');
+        questionText.innerHTML = decodeHtmlEntities(question.question);
+        questionDiv.appendChild(questionText);
+
+        const optionsDiv = document.createElement('div');
+        optionsDiv.className = 'options';
+
+        question.options.forEach(option => {
+            const optionLabel = document.createElement('label');
+            optionLabel.className = 'option';
+            const optionInput = document.createElement('input');
+            optionInput.type  = 'radio';
+            optionInput.name  = `q${question.id}`;
+            optionInput.value = option;
+            optionInput.addEventListener('change', updateNavButtons);
+            const optionText = document.createElement('span');
+            optionText.innerHTML = decodeHtmlEntities(option);
+            optionLabel.appendChild(optionInput);
+            optionLabel.appendChild(optionText);
+            optionsDiv.appendChild(optionLabel);
+        });
+
+        questionDiv.appendChild(optionsDiv);
+        questionsDiv.appendChild(questionDiv);
+    });
+
+    updateQuestionCounter(0, questions.length);
+    updateSubmitButtonVisibility(0, questions.length);
+}
+
+function showNextQuestion() {
+    const questions = document.querySelectorAll('#questions-container .question');
+    if (currentQuestionIndex < questions.length - 1) {
+        questions[currentQuestionIndex].style.display = 'none';
+        currentQuestionIndex++;
+        questions[currentQuestionIndex].style.display = 'block';
+        updateQuestionCounter(currentQuestionIndex, questions.length);
+        updateNavButtons();
+        updateSubmitButtonVisibility(currentQuestionIndex, questions.length);
+        updateNavPillsState();
+        scrollToQuestions();
+    }
+}
+
+function showPreviousQuestion() {
+    const questions = document.querySelectorAll('#questions-container .question');
+    if (currentQuestionIndex > 0) {
+        questions[currentQuestionIndex].style.display = 'none';
+        currentQuestionIndex--;
+        questions[currentQuestionIndex].style.display = 'block';
+        updateQuestionCounter(currentQuestionIndex, questions.length);
+        updateNavButtons();
+        updateSubmitButtonVisibility(currentQuestionIndex, questions.length);
+        updateNavPillsState();
+        scrollToQuestions();
+    }
+}
+
+function scrollToQuestions() {
+    const el = document.getElementById('questions-container');
+    if (el) window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
+}
+
+function updateQuestionCounter(current, total) {
+    const counter = document.getElementById('questionCounter');
+    if (counter) counter.textContent = `Question ${current + 1} of ${total}`;
+}
+
+function updateNavButtons() {
+    const prevButton = document.getElementById('prevQuestionBtn');
+    const nextButton = document.getElementById('nextQuestionBtn');
+    const questions  = document.querySelectorAll('#questions-container .question');
+    if (prevButton) prevButton.style.display = currentQuestionIndex > 0 ? 'inline-flex' : 'none';
+    if (nextButton) nextButton.style.display = currentQuestionIndex === questions.length - 1 ? 'none' : 'inline-flex';
+}
+
+function updateSubmitButtonVisibility(current, total) {
+    submitQuizBtn.style.display = current === total - 1 ? 'block' : 'none';
+}
+
+function createQuestionNavPills(totalQuestions) {
+    const navPillsContainer = document.createElement('div');
+    navPillsContainer.id = 'questionNavPills';
+    for (let i = 0; i < totalQuestions; i++) {
+        const pill = document.createElement('button');
+        pill.className = 'question-pill' + (i === 0 ? ' active' : '');
+        pill.textContent = i + 1;
+        pill.dataset.questionIndex = i;
+        pill.setAttribute('aria-label', `Go to question ${i + 1}`);
+        pill.addEventListener('click', () => jumpToQuestion(parseInt(pill.dataset.questionIndex)));
+        navPillsContainer.appendChild(pill);
+    }
+    const timerEl = document.getElementById('examTimerContainer');
+    timerEl.insertAdjacentElement('afterend', navPillsContainer);
+}
+
+function jumpToQuestion(index) {
+    const questions = document.querySelectorAll('#questions-container .question');
+    questions[currentQuestionIndex].style.display = 'none';
+    currentQuestionIndex = index;
+    questions[currentQuestionIndex].style.display = 'block';
+    updateQuestionCounter(currentQuestionIndex, questions.length);
+    updateNavButtons();
+    updateSubmitButtonVisibility(currentQuestionIndex, questions.length);
+    updateNavPillsState();
+    scrollToQuestions();
+}
+
+function updateNavPillsState() {
+    const pills     = document.querySelectorAll('.question-pill');
+    const questions = document.querySelectorAll('#questions-container .question');
+    pills.forEach((pill, index) => {
+        const radio = questions[index]?.querySelector('input[type="radio"]');
+        if (!radio) return;
+        const isAnswered = document.querySelector(`input[name="${radio.name}"]:checked`) !== null;
+        pill.classList.remove('active', 'answered');
+        if (index === currentQuestionIndex) pill.classList.add('active');
+        else if (isAnswered) pill.classList.add('answered');
+    });
+}
+
+// ── Quiz submission ───────────────────────────────────────────
+function submitQuiz() {
+    const radios    = document.querySelectorAll('input[type="radio"]:checked');
+    const answers   = {};
+    const attempted = radios.length;
+    const timeElapsed = examDuration - timeRemaining;
+    const mm = Math.floor(timeElapsed / 60).toString().padStart(2, '0');
+    const ss = (timeElapsed % 60).toString().padStart(2, '0');
+    const timeElapsedFormatted = `${mm}:${ss}`;
+    radios.forEach(radio => { answers[radio.name.replace('q', '')] = radio.value; });
+
+    fetch('/submit_quiz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answers, timeElapsed, attempted })
+    })
+    .then(r => r.json())
+    .then(data => {
+        // ── Stop camera and proctoring after submission ──
+        clearInterval(timerInterval);
+        stopCamera();
+        proctorOverlay.style.display = 'none';
+        examTimerContainer.style.display = 'none';
+
+        displayQuizAnalysis(data, timeElapsedFormatted, attempted);
+        document.querySelectorAll('input[type="radio"]').forEach(i => i.disabled = true);
+        submitQuizBtn.style.display = 'none';
+    })
+    .catch(err => {
+        console.error('Error submitting quiz:', err);
+        quizResult.textContent   = '⚠️ Failed to submit quiz. Please try again.';
+        quizResult.style.display = 'block';
+        quizResult.style.color   = 'var(--danger)';
+    });
+}
+
+function displayQuizAnalysis(data, timeElapsedFormatted, attemptedQuestions) {
+    quizResult.style.display            = 'none';
+    quizAnalysisContainer.style.display = 'block';
+    quizAnalysisContainer.innerHTML     = '';
+
+    const scorePercent     = (data.score / data.total) * 100;
+    const attemptedPercent = (attemptedQuestions / data.total) * 100;
+    const accuracy         = attemptedQuestions > 0 ? (data.score / attemptedQuestions) * 100 : 0;
+    const passed           = scorePercent >= 60;
+
+    const scoreHeader = document.createElement('div');
+    scoreHeader.className = 'score-display';
+    scoreHeader.innerHTML = `
+        <div class="score-circle">
+            <span class="score-num">${data.score}/${data.total}</span>
+            <span class="score-label">${scorePercent.toFixed(0)}%</span>
+        </div>
+        <div>
+            <div class="result-status ${passed ? 'pass' : 'fail'}">
+                ${passed ? '🎓 Passed' : '📚 Needs Improvement'}
+            </div>
+            <p style="margin-top:0.5rem;font-size:0.9rem;color:var(--text-muted);text-align:center;max-width:100%;">
+                ${passed ? 'Great work! You have passed the exam.' : 'Keep studying and give it another shot!'}
+            </p>
+        </div>`;
+    quizAnalysisContainer.appendChild(scoreHeader);
+
+    const statsGrid = document.createElement('div');
+    statsGrid.className = 'stats-grid';
+    [
+        { label: '⏱ Time Taken', value: timeElapsedFormatted, sub: `of ${Math.floor(examDuration/60)}:00` },
+        { label: '📝 Attempted',  value: `${attemptedQuestions}/${data.total}`, sub: `${attemptedPercent.toFixed(0)}% attempt rate` },
+        { label: '🎯 Accuracy',   value: `${accuracy.toFixed(0)}%`, sub: `${data.score} correct of ${attemptedQuestions} attempted` }
+    ].forEach(c => {
+        const card = document.createElement('div');
+        card.className = 'stats-card';
+        card.innerHTML = `<div class="stats-header">${c.label}</div><div class="stats-value">${c.value}</div><div class="stats-sub">${c.sub}</div>`;
+        statsGrid.appendChild(card);
+    });
+    quizAnalysisContainer.appendChild(statsGrid);
+
+    const correct   = data.score;
+    const incorrect = attemptedQuestions - data.score;
+    const skipped   = data.total - attemptedQuestions;
+    const perfSection = document.createElement('div');
+    perfSection.className = 'perf-section';
+    perfSection.innerHTML = `
+        <h3>📊 Performance Breakdown</h3>
+        <div class="perf-row"><span class="perf-label">Correct</span><div class="perf-bar-track"><div class="perf-bar-fill" style="width:${(correct/data.total)*100}%;background:var(--success);"></div></div><span class="perf-count">${correct}</span></div>
+        <div class="perf-row"><span class="perf-label">Incorrect</span><div class="perf-bar-track"><div class="perf-bar-fill" style="width:${(incorrect/data.total)*100}%;background:var(--danger);"></div></div><span class="perf-count">${incorrect}</span></div>
+        <div class="perf-row"><span class="perf-label">Skipped</span><div class="perf-bar-track"><div class="perf-bar-fill" style="width:${(skipped/data.total)*100}%;background:var(--text-muted);"></div></div><span class="perf-count">${skipped}</span></div>`;
+    quizAnalysisContainer.appendChild(perfSection);
+
+    if (data.answers && Object.keys(data.answers).length > 0) {
+        const answersSection = document.createElement('div');
+        const sectionTitle = document.createElement('div');
+        sectionTitle.className = 'section-title';
+        sectionTitle.innerHTML = `<span class="icon">🔍</span> Question Analysis`;
+        sectionTitle.style.marginBottom = '1rem';
+        answersSection.appendChild(sectionTitle);
+        Object.keys(data.answers).forEach(qid => {
+            const answer = data.answers[qid];
+            const el = document.createElement('div');
+            el.className = 'answer-card';
+            el.innerHTML = `
+                <div class="q-text">Q${qid}: ${answer.question}</div>
+                <div class="${answer.correct ? 'correct-answer' : 'incorrect-answer'}">
+                    <div><strong>Your answer:</strong> ${answer.user_answer || '<em>Not answered</em>'}</div>
+                    ${!answer.correct ? `<div><strong>Correct answer:</strong> ${answer.correct_answer}</div>` : ''}
+                    <div class="answer-feedback">${answer.correct ? '✅ Correct' : '❌ Incorrect'}</div>
+                </div>`;
+            answersSection.appendChild(el);
+        });
+        quizAnalysisContainer.appendChild(answersSection);
+    }
+
+    const printBtn = document.createElement('button');
+    printBtn.className = 'print-btn';
+    printBtn.innerHTML = '🖨️ Print Results';
+    printBtn.onclick = () => window.print();
+    quizAnalysisContainer.appendChild(printBtn);
+}
+
+// ── Tab switching detection ───────────────────────────────────
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden && examContent.style.display === 'block') {
+        focusLostCount++;
+        totalViolations = faceNotVisibleCount + focusLostCount + mobileDetectedCount;
+        showWarning(`⚠️ Tab switching detected! Violation ${totalViolations}/${MAX_VIOLATIONS}`);
+        fetch('/log_cheating', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ reason: 'Tab switched or window minimized' }) });
+        checkViolationsAndSubmit();
+    }
+});
+
+window.addEventListener('blur', () => {
+    if (examContent.style.display === 'block') {
+        focusLostCount++;
+        totalViolations = faceNotVisibleCount + focusLostCount + mobileDetectedCount;
+        showWarning(`⚠️ Window lost focus! Violation ${totalViolations}/${MAX_VIOLATIONS}`);
+        fetch('/log_cheating', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ reason: 'Window focus lost during exam' }) });
+        checkViolationsAndSubmit();
+    }
+});
+
+// ── Button event listeners ────────────────────────────────────
+
+acceptTermsBtn.addEventListener('click', () => { hideTermsModal(); startExam(); });
+declineTermsBtn.addEventListener('click', () => { hideTermsModal(); showWarning('You must accept the terms and conditions to start the exam.'); });
+submitQuizBtn.addEventListener('click', () => { clearInterval(timerInterval); submitQuiz(); });
+endTestBtn.addEventListener('click', () => { hideExamEndedModal(); window.location.href = '/'; });
+
+// ── Chat collapse/expand ──────────────────────────────────────
+const chatHeader = document.getElementById('chat-header');
+const chatBody   = document.getElementById('chat-body');
+chatHeader.addEventListener('click', () => {
+    chatBody.classList.toggle('collapsed');
+    chatHeader.classList.toggle('collapsed');
+});
+
+// ── Test-gen panel toggle ─────────────────────────────────────
+document.getElementById('tg-toggle-btn').addEventListener('click', () => {
+    const panel = document.getElementById('test-gen-panel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+});
+
+// ═══════════════════════════════════════════════════════
+//  Erica Chatbot (Grok-powered)
+// ═══════════════════════════════════════════════════════
+class EricaChatbot {
+    constructor() {
+        this.history = [];
+        this.greeting = "Hello! I'm Nirixa AI, your exam assistant powered by Grok. " +
+            "I can answer questions, explain topics, or generate a custom quiz — " +
+            "just ask! Try: \"Make me a 5-question quiz on World War II\".";
+    }
+
+    async send(userMessage) {
+        this.history.push({ role: 'user', content: userMessage });
+        const res = await fetch(CHAT_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: userMessage, history: this.history }),
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error || `Server error ${res.status}`);
+        }
+        const data = await res.json();
+        this.history.push({ role: 'assistant', content: data.reply });
+        if (this.history.length > 20) this.history = this.history.slice(-20);
+        return data;
+    }
+}
+
+// ── Speech recognition ────────────────────────────────────────
+class MicInput {
+    constructor(onResult, onError) {
+        this.onResult = onResult;
+        this.onError  = onError;
+        this.active   = false;
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) { this.supported = false; return; }
+        this.supported = true;
+        this.sr = new SR();
+        this.sr.lang            = 'en-US';
+        this.sr.interimResults  = true;   // ← show words as they come in
+        this.sr.maxAlternatives = 1;
+        this.sr.continuous      = false;
+
+        this.sr.onresult = (e) => {
+            let interim = '';
+            let final   = '';
+            for (let i = e.resultIndex; i < e.results.length; i++) {
+                if (e.results[i].isFinal) final   += e.results[i][0].transcript;
+                else                      interim += e.results[i][0].transcript;
+            }
+            // Show interim results live in the input box
+            const input = document.getElementById('user-input');
+            if (input) input.value = final || interim;
+
+            if (final) {
+                this.active = false;
+                this.onResult(final.trim());
+            }
+        };
+
+        this.sr.onerror = (e) => {
+            this.active = false;
+            console.warn('Speech error:', e.error);
+            if (e.error === 'no-speech' || e.error === 'aborted') {
+                this.onError(null); // silent reset
+                return;
+            }
+            if (e.error === 'not-allowed') {
+                this.onError('Microphone permission denied. Please allow mic access.');
+                return;
+            }
+            if (e.error === 'network') {
+                this.onError('Network error — speech recognition needs internet.');
+                return;
+            }
+            this.onError(e.error);
+        };
+
+        this.sr.onend = () => {
+            this.active = false;
+        };
+    }
+
+    toggle() {
+        if (!this.supported) {
+            this.onError('Speech recognition not supported. Use Chrome.');
+            return false;
+        }
+        if (this.active) {
+            this.sr.stop();
+            this.active = false;
+        } else {
+            try {
+                this.sr.start();
+                this.active = true;
+            } catch (e) {
+                console.error('SR start error:', e);
+                this.active = false;
+                this.onError('Could not start microphone.');
+                return false;
+            }
+        }
+        return this.active;
+    }
+}
+
+// ── Chat UI helpers ───────────────────────────────────────────
+function addMessage(sender, text, chatWindow) {
+    const div = document.createElement('div');
+    div.className   = `message ${sender}`;
+    div.textContent = text;
+    chatWindow.appendChild(div);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+    return div;
+}
+
+function addTypingIndicator(chatWindow) {
+    const div = document.createElement('div');
+    div.className = 'message bot typing-indicator';
+    div.innerHTML = '<span></span><span></span><span></span>';
+    chatWindow.appendChild(div);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+    return div;
+}
+
+// ── Test-gen panel logic ──────────────────────────────────────
+function initTestGenPanel(chatWindow) {
+    const btn = document.getElementById('tg-generate');
+    if (!btn) return;
+    btn.addEventListener('click', async () => {
+        const topic      = (document.getElementById('tg-topic')?.value || '').trim();
+        const num        = parseInt(document.getElementById('tg-num')?.value || '5');
+        const difficulty = document.getElementById('tg-difficulty')?.value || 'medium';
+        if (!topic) { alert('Please enter a topic.'); return; }
+        btn.disabled    = true;
+        btn.textContent = 'Generating…';
+        try {
+            const res = await fetch(GENERATE_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ topic, num_questions: num, difficulty }),
+            });
+            const questions = await res.json();
+            if (questions.error) throw new Error(questions.error);
+            addMessage('bot', `Generated a ${difficulty} quiz on "${topic}" 👇`, chatWindow);
+            renderQuizInChat(questions, chatWindow);
+            document.getElementById('test-gen-panel').style.display = 'none';
+        } catch (err) {
+            addMessage('bot', `Error: ${err.message}`, chatWindow);
+        } finally {
+            btn.disabled    = false;
+            btn.textContent = 'Generate Test';
+        }
+    });
+}
+
+// ── Main chatbot init ─────────────────────────────────────────
+function initChatbot() {
+    const erica      = new EricaChatbot();
+    const chatWindow = document.getElementById('chat-window');
+    const userInput  = document.getElementById('user-input');
+    const sendButton = document.getElementById('send-button');
+    const micButton  = document.getElementById('mic-button');
+
+    addMessage('bot', erica.greeting, chatWindow);
+
+    async function handleSend() {
+        const msg = userInput.value.trim();
+        if (!msg) return;
+        addMessage('user', msg, chatWindow);
+        userInput.value     = '';
+        sendButton.disabled = true;
+        const typing = addTypingIndicator(chatWindow);
+        try {
+            const data = await erica.send(msg);
+            typing.remove();
+            if (data.is_quiz && data.quiz?.length) {
+                addMessage('bot', "Here's your custom quiz! 👇", chatWindow);
+                renderQuizInChat(data.quiz, chatWindow);
+            } else {
+                addMessage('bot', data.reply, chatWindow);
+            }
+        } catch (err) {
+            typing.remove();
+            addMessage('bot', `⚠️ ${err.message || 'Something went wrong. Please try again.'}`, chatWindow);
+        } finally {
+            sendButton.disabled = false;
+            userInput.focus();
+        }
+    }
+
+    // ── Mic: defined AFTER handleSend so it's in scope ──
+    const mic = new MicInput(
+    (transcript) => {
+        // Put text in input — user can edit then press Send or Enter
+        userInput.value = transcript;
+        micButton?.classList.remove('listening');
+        micButton.title = 'Voice input';
+        micButton.classList.remove('listening');
+        userInput.focus();
+        // Highlight the input briefly so user knows it was captured
+        userInput.style.borderColor = 'var(--success)';
+        setTimeout(() => { userInput.style.borderColor = ''; }, 2000);
+    },
+    (errMsg) => {
+        micButton?.classList.remove('listening');
+        if (micButton) micButton.title = 'Voice input';
+        if (errMsg) addMessage('bot', `🎤 ${errMsg}`, chatWindow);
+    }
+);
+
+    if (micButton) {
+        if (!mic.supported) {
+            micButton.disabled = true;
+            micButton.title = 'Speech recognition not supported in this browser';
+            micButton.style.opacity = '0.4';
+        }
+        micButton.addEventListener('click', () => {
+            const listening = mic.toggle();
+            micButton.classList.toggle('listening', listening);
+            micButton.title = listening ? 'Listening… (click to stop)' : 'Voice input';
+        });
+    }
+
+    sendButton.addEventListener('click', handleSend);
+    userInput.addEventListener('keypress', e => { if (e.key === 'Enter') handleSend(); });
+    initTestGenPanel(chatWindow);
+}
+document.addEventListener('DOMContentLoaded', initChatbot);
+</script>
+</body>
+</html>

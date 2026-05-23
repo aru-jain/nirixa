@@ -1,0 +1,126 @@
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Cheating Detection</title>
+</head>
+<body>
+    <h1>AI Cheating Detection System</h1>
+
+    <!-- Video Stream -->
+    <img src="{{ url_for('video_feed') }}" width="640" height="480">
+
+    <button id="startDetection">Start Detection</button>
+    <p id="aiResult"></p>
+
+    <script>
+        document.getElementById("startDetection").addEventListener("click", function () {
+            fetch("/detect")
+            .then(response => response.json())
+            .then(data => {
+                if (data.cheating_detected) {
+                    document.getElementById("aiResult").innerText = "Cheating Detected!";
+                } else {
+                    document.getElementById("aiResult").innerText = "No Cheating Detected.";
+                }
+            });
+        });
+    </script>
+</body>
+</html> {% endcomment %}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Cheating Detection</title>
+    <style>
+        #videoContainer { position: relative; display: inline-block; }
+        #status { font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>AI Cheating Detection System</h1>
+
+    <div id="videoContainer">
+        <!-- Live browser camera feed -->
+        <video id="localVideo" width="640" height="480" autoplay muted></video>
+
+        <!-- Annotated frames returned from server -->
+        <img id="annotatedFeed" width="640" height="480"
+             style="display:none; position:absolute; top:0; left:0;" />
+    </div>
+
+    <!-- Hidden canvas to grab frames -->
+    <canvas id="captureCanvas" width="640" height="480" style="display:none;"></canvas>
+
+    <p id="status">Initializing camera...</p>
+    <p id="aiResult"></p>
+
+    <script>
+        const video = document.getElementById('localVideo');
+        const canvas = document.getElementById('captureCanvas');
+        const ctx = canvas.getContext('2d');
+        const annotatedFeed = document.getElementById('annotatedFeed');
+        const statusEl = document.getElementById('status');
+        const resultEl = document.getElementById('aiResult');
+
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: 640, height: 480 },
+                    audio: false
+                });
+                video.srcObject = stream;
+                statusEl.textContent = 'Camera active. Detection running...';
+                startDetectionLoop();
+            } catch (err) {
+                statusEl.textContent = `Camera error: ${err.message}`;
+            }
+        }
+
+        function startDetectionLoop() {
+            setInterval(async () => {
+                ctx.drawImage(video, 0, 0, 640, 480);
+                const frameData = canvas.toDataURL('image/jpeg', 0.7);
+
+                try {
+                    const response = await fetch('/analyze_frame', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ frame: frameData })
+                    });
+
+                    const data = await response.json();
+                    if (data.error) return;
+
+                    // Show server-annotated frame
+                    annotatedFeed.src = data.annotated_frame;
+                    annotatedFeed.style.display = 'block';
+                    video.style.display = 'none';
+
+                    if (data.cheating_detected) {
+                        resultEl.textContent = `⚠️ Cheating Detected: ${data.reason}`;
+                        resultEl.style.color = 'red';
+                        fetch('/log_cheating', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ reason: data.reason })
+                        });
+                    } else {
+                        resultEl.textContent = '✅ No cheating detected';
+                        resultEl.style.color = 'green';
+                    }
+                } catch (err) {
+                    console.error('Detection failed:', err);
+                }
+            }, 1500);
+        }
+
+        startCamera();
+    </script>
+</body>
+</html>

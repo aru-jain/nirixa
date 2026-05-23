@@ -1,0 +1,8 @@
+flask
+mysql-connector-python
+opencv-python-headless
+numpy
+requests
+ultralytics
+mediapipe==0.10.9
+imutils

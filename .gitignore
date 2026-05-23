@@ -1,0 +1,10 @@
+venv310/
+__pycache__/
+*.pyc
+*.pyo
+.env
+upload.py
+create_tables.py
+test_db.py
+*.pt
+models/
