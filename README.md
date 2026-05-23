@@ -46,16 +46,13 @@ Nirixa is an intelligent, browser-based exam proctoring system that combines **r
 ---
 
 ## 🔍 How It Works
-Student signs up and logs in
-Generates a custom AI quiz — topic, difficulty, number of questions
-Accepts terms and conditions
-Exam starts — webcam activates, AI chatbot disappears
-Nirixa monitors in real time:
-• Face not visible  → Violation ⚠️
-• Phone detected    → Violation ⚠️
-• Tab switched      → Violation ⚠️
-• 3 violations      → Auto-submit 🚨
-Student submits → Camera stops → Full results shown instantly
+
+1. Student signs up and logs in
+2. Generates a custom AI quiz — topic, difficulty, number of questions
+3. Accepts terms and conditions
+4. Exam starts — webcam activates, AI chatbot disappears
+5. Nirixa monitors in real time — face not visible, phone detected, or tab switched each count as a violation — 3 violations triggers auto-submit
+6. Student submits — camera stops — full results shown instantly
 
 ---
 
@@ -72,10 +69,81 @@ Student submits → Camera stops → Full results shown instantly
 
 ## 🤖 AI Quiz Generation
 
-Nirixa uses Groq LLaMA 3.1 to generate unique multiple-choice exams on any topic. Smart timer auto-calculates based on difficulty — 3 mins per question (easy), 4 mins (medium), 6 mins (hard). Supports up to 20 questions per exam.
+Nirixa uses Groq LLaMA 3.1 to generate unique multiple-choice exams on any topic. Smart timer auto-calculates based on difficulty — 3 mins per question for easy, 4 mins for medium, 6 mins for hard. Supports up to 20 questions per exam.
 
 ---
 
 ## 🚀 Getting Started
 
-**1. Clone the repo**
+**1. Clone the repo and install dependencies**
+
+```bash
+git clone https://github.com/aru-jain/nirixa.git
+cd nirixa
+pip install -r requirements.txt
+```
+
+**2. Create a `.env` file with your credentials**
+
+```bash
+GROQ_API_KEY=your_groq_api_key
+DB_HOST=your_database_host
+DB_PORT=3306
+DB_USER=your_database_user
+DB_PASSWORD=your_database_password
+DB_NAME=your_database_name
+```
+
+**3. Set up the database and run**
+
+```bash
+python create_tables.py
+python app.py
+```
+
+Visit `http://localhost:7860`
+
+---
+
+## 📁 Project Structure
+
+```bash
+nirixa/
+├── app.py
+├── Dockerfile
+├── requirements.txt
+├── haarcascade_frontalface_default.xml
+├── detection_modules/
+│   ├── head_pose.py
+│   ├── eye_movement.py
+│   └── mobile_detection.py
+├── static/
+│   └── images/
+└── templates/
+    ├── exam.html
+    ├── login.html
+    ├── signup.html
+    └── index.html
+```
+
+---
+
+## 🧠 What We Learned
+
+Building Nirixa taught us that AI APIs deprecate fast and without warning — always abstract model names and endpoints into config variables. Browser security treats localhost and network IPs completely differently, which broke our microphone feature until we understood why. And balancing exam security with student fairness is genuinely hard design work — the 3-violation system with real-time warnings was the sweet spot between too strict and too lenient.
+
+---
+
+## 📄 License
+
+MIT License — free to use, modify, and deploy.
+
+---
+
+<div align="center">
+
+**⭐ Star this repo if you found it useful!**
+
+[![Try Nirixa Live](https://img.shields.io/badge/Try_Nirixa_Live-→-purple?style=for-the-badge)](https://arujain-nirixa.hf.space)
+
+</div>
