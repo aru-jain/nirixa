@@ -87,11 +87,9 @@ pip install -r requirements.txt
 
 ```bash
 GROQ_API_KEY=your_groq_api_key
-DB_HOST=your_database_host
-DB_PORT=3306
-DB_USER=your_database_user
-DB_PASSWORD=your_database_password
-DB_NAME=your_database_name
+MONGO_URI=mongodb+srv://<user>:<pass>@<cluster>.mongodb.net/
+MONGO_DB=your_database_name
+SECRET_KEY=<random string>
 ```
 
 **3. Set up the database and run**
