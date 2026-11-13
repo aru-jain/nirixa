@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-import mysql.connector
+from pymongo import MongoClient
+from pymongo.errors import DuplicateKeyError
+from werkzeug.security import generate_password_hash, check_password_hash
 import cv2
 import requests
 import random
@@ -13,7 +15,7 @@ from detection_modules.eye_movement import process_eye_movement
 from detection_modules.mobile_detection import process_mobile_detection
 
 app = Flask(__name__)
-app.secret_key = 'nirixa_secret'
+app.secret_key = os.environ.get('SECRET_KEY', 'nirixa_secret')
 
 # ── Config ────────────────────────────────────────────────────
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
@@ -23,23 +25,25 @@ GROK_API_KEY = os.environ.get('GROQ_API_KEY', '')
 GROK_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 GROK_MODEL   = "llama-3.1-8b-instant"
 
-# ── DB config ─────────────────────────────────────────────────
-DB_CONFIG = {
-    'host':            os.environ.get('DB_HOST',     ''),
-    'port':            int(os.environ.get('DB_PORT', 3306)),
-    'user':            os.environ.get('DB_USER',     ''),
-    'password':        os.environ.get('DB_PASSWORD', ''),
-    'database':        os.environ.get('DB_NAME',     ''),
-    'connect_timeout': 10
-}
+# ── MongoDB Atlas config ──────────────────────────────────────
+MONGO_URI = os.environ.get('MONGO_URI', '')   # mongodb+srv://user:pass@cluster.mongodb.net/
+MONGO_DB  = os.environ.get('MONGO_DB', 'nirixa')
+
+_client = None
 
 def get_db():
-    try:
-        conn = mysql.connector.connect(**DB_CONFIG)
-        return conn
-    except Exception as e:
-        print(f"[DB ERROR] {e}")
-        raise
+    """Return the Mongo database. Client is created once and reused (it's thread-safe + pooled)."""
+    global _client
+    if _client is None:
+        try:
+            _client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=10000)
+            _client.admin.command('ping')
+            _client[MONGO_DB]['users'].create_index('username', unique=True)
+        except Exception as e:
+            _client = None
+            print(f"[DB ERROR] {e}")
+            raise
+    return _client[MONGO_DB]
 
 # ── Vision ────────────────────────────────────────────────────
 face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
@@ -149,18 +153,14 @@ def signup():
             return render_template('signup.html', error="Username and password are required.")
 
         try:
-            db     = get_db()
-            cursor = db.cursor()
-            cursor.execute(
-                "INSERT INTO users (username, password) VALUES (%s, %s)",
-                (username, password)
-            )
-            db.commit()
-            cursor.close()
-            db.close()
+            db = get_db()
+            db.users.insert_one({
+                "username": username,
+                "password": generate_password_hash(password),
+            })
             return redirect(url_for('login'))
 
-        except mysql.connector.IntegrityError:
+        except DuplicateKeyError:
             return render_template('signup.html', error="Username already exists. Try another.")
         except Exception as e:
             print(f"[SIGNUP ERROR] {e}")
@@ -177,19 +177,10 @@ def login():
         print(f"[LOGIN ATTEMPT] username={username}")
 
         try:
-            db     = get_db()
-            cursor = db.cursor()
-            cursor.execute(
-                "SELECT * FROM users WHERE username=%s AND password=%s",
-                (username, password)
-            )
-            user = cursor.fetchone()
-            cursor.close()
-            db.close()
+            db   = get_db()
+            user = db.users.find_one({"username": username})
 
-            print(f"[LOGIN] DB result: {user}")
-
-            if user:
+            if user and check_password_hash(user['password'], password):
                 session.clear()
                 session['username'] = username
                 session.modified = True
@@ -218,13 +209,9 @@ def exam():
 @app.route('/test_db')
 def test_db():
     try:
-        db     = get_db()
-        cursor = db.cursor()
-        cursor.execute("SELECT COUNT(*) FROM users")
-        count = cursor.fetchone()
-        cursor.close()
-        db.close()
-        return jsonify({"status": "connected", "user_count": count[0]})
+        db    = get_db()
+        count = db.users.count_documents({})
+        return jsonify({"status": "connected", "user_count": count})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
